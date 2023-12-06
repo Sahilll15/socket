@@ -1,0 +1,171 @@
+<!-- FILEPATH: /Users/apple/Desktop/socket/index.html -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+    <style>
+      body {
+        margin: 0;
+        padding-bottom: 3rem;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+      }
+
+      .container {
+        padding: 100px;
+      }
+
+      #form {
+        background: rgba(0, 0, 0, 0.15);
+        padding: 0.25rem;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        height: 3rem;
+        box-sizing: border-box;
+        backdrop-filter: blur(10px);
+      }
+      #input {
+        border: none;
+        padding: 0 1rem;
+        flex-grow: 1;
+        border-radius: 2rem;
+        margin: 0.25rem;
+      }
+      #input:focus {
+        outline: none;
+      }
+      #form > button {
+        background: #333;
+        border: none;
+        padding: 0 1rem;
+        margin: 0.25rem;
+        border-radius: 3px;
+        outline: none;
+        color: #fff;
+      }
+
+      #messages {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+      }
+      #messages > li {
+        padding: 0.5rem 1rem;
+      }
+      #messages > li:nth-child(odd) {
+        background: #efefef;
+      }
+
+      .header {
+        text-align: center;
+        color: #000000;
+        font-size: 20px;
+        padding: 10px;
+      }
+      .name_input {
+        width: 100%;
+        height: 50px;
+        border-radius: 10px;
+        border: 1px solid #000000;
+        padding: 10px;
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body class="container">
+    <h1 class="header">Socket.IO Chat</h1>
+    <h2 class="header">Welcome to Socket.IO Chat</h2>
+    <h3 class="header">Enter your name to start chatting</h3>
+    <h3 class="user_name" id="user_name"></h3>
+
+    <!-- Name Input Form -->
+    <form action="" id="name_form">
+      <input
+        type="text"
+        name=""
+        placeholder="Enter Your name"
+        class="name_input"
+        id="name_input"
+      />
+      <button class="name_input" type="submit">Send Name</button>
+    </form>
+
+    <ul id="messages"></ul>
+
+    <!-- Message Input Form -->
+    <form id="form" action="">
+      <input id="input" autocomplete="off" /><button>Send</button>
+    </form>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      var socket = io();
+
+      var form = document.getElementById("form");
+      var input = document.getElementById("input");
+      var nameForm = document.getElementById("name_form");
+      var name_input = document.getElementById("name_input");
+      var name = "";
+      var user_name = document.getElementById("user_name");
+
+      nameForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        if (name_input.value) {
+          name = name_input.value;
+
+          //this message is sent to the backend
+          //when the user joins the chat
+          socket.emit("user", name);
+
+          user_name.innerHTML = name;
+
+          //   name_input.value = "";
+          //   nameForm.style.display = "none";
+          //   form.style.display = "block";
+          //   console.log("name", name);
+        }
+      });
+
+      form.addEventListener("submit", function (e) {
+        if (name === "") {
+          alert("Please enter your name first");
+          return;
+        }
+        e.preventDefault();
+        if (input.value) {
+          //this message is sent to the backend
+          socket.emit("chat message", input.value);
+          input.value = "";
+        }
+      });
+
+      //this message comes from the backend
+      socket.on("chat message", function (msg) {
+        var item = document.createElement("li");
+        item.textContent = msg;
+        messages.appendChild(item);
+        window.scrollTo(0, document.body.scrollHeight);
+      });
+
+      //the username comes from the backend when user joins
+      socket.on("user", (user) => {
+        var item = document.createElement("li");
+        item.textContent = user + " joined the chat";
+        messages.appendChild(item);
+        window.scrollTo(0, document.body.scrollHeight);
+      });
+
+      //this messages are send from the backend when user leaves the chat
+      socket.on("Leftuser", (msg) => {
+        var item = document.createElement("li");
+        item.textContent = msg;
+        messages.appendChild(item);
+        window.scrollTo(0, document.body.scrollHeight);
+      });
+    </script>
+  </body>
+</html>
